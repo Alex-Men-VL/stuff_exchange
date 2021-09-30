@@ -9,6 +9,8 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from common import register_handlers_common
 from dotenv import load_dotenv
 
+from models import DB, User, Stuff
+
 
 async def main():
     logging.basicConfig(
@@ -28,4 +30,6 @@ async def main():
     await dp.start_polling(dp)
 
 if __name__ == '__main__':
+    DB.connect()
+    DB.create_tables([User, Stuff])
     asyncio.run(main())

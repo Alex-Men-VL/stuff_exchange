@@ -6,6 +6,8 @@ from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from dotenv import load_dotenv
 
+from models import User, Stuff
+
 
 class AddStuff(StatesGroup):
     waiting_for_photo = State()
@@ -27,6 +29,11 @@ async def load_stuff_photo(message: types.Message, state: FSMContext):
 
     photo_id = message.photo[-1].file_id
     # TODO: добавление id объявления пользователю
+    try:
+        user = User.get(User.telegram_id == message.from_user.id)
+    except User.DoesNotExist:
+        user = User.create(telegram_id=message.from_user.id)
+    stuff = Stuff.create(user=user)
 
     load_dotenv()
     bot = Bot(token=os.getenv('TG_TOKEN'))
@@ -43,6 +50,9 @@ async def load_stuff_photo(message: types.Message, state: FSMContext):
     await state.update_data(photo=photo_file)
     await state.update_data(photo_name=photo_name.split('/')[-1] +
                             photo_extension)
+    stuff.image_id = photo_id
+    stuff.image_path = photo_name.split('/')[-1] + photo_extension
+    stuff.save()
 
     await AddStuff.waiting_for_description.set()
     await message.answer('Теперь введите описание.')
