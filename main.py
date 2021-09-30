@@ -3,11 +3,12 @@ import logging
 import os
 from pathlib import Path
 
-from add_stuff import register_handlers_stuff
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from common import register_handlers_common
 from dotenv import load_dotenv
+from handlers.add_stuff import register_handlers_stuff
+from handlers.common import register_handlers_common
+from handlers.find_stuff import register_handlers_ads
 
 from models import DB, User, Stuff
 
@@ -26,6 +27,7 @@ async def main():
 
     register_handlers_common(dp)
     register_handlers_stuff(dp)
+    register_handlers_ads(dp)
 
     await dp.start_polling(dp)
 
