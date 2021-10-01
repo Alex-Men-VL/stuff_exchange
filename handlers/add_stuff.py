@@ -56,19 +56,19 @@ async def get_stuff_description(message: types.Message, state: FSMContext):
     if len(os.listdir(f'data/{message.from_user.id}')):
         keyboard.add('Найти вещь')
 
-    await state.update_data(stuff_desription=message.text)
+    await state.update_data(stuff_description=message.text)
     stuff = await state.get_data()
 
     user = User.get(User.telegram_id == message.from_user.id)
     Stuff.create(
         owner=user,
         image_id=stuff['photo']['file_id'],
-        image_path = stuff['photo_name'],
-        description = stuff['stuff_desription'],
+        image_path=stuff['photo_name'],
+        description=stuff['stuff_description'],
     )
 
-    print(f"\nИзображение: {stuff['photo']}"
-          f"\nОписание: {stuff['stuff_desription']}")
+    # print(f"\nИзображение: {stuff['photo']}"
+    #       f"\nОписание: {stuff['stuff_description']}")
 
     await message.answer('Объявление добавлено. Вы находитесь в главном '
                          'меню.', reply_markup=keyboard)
