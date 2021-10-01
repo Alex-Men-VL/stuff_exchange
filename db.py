@@ -36,5 +36,17 @@ def init_db():
     models.Category.insert_many(CATEGORIES).execute()
 
 
+def select_unseen_stuff(user):
+    '''
+    Выбирает вещи, которые пользователь еще не смотрел.
+    Вещи самого пользователя пропускаются.
+    '''
+    return [
+        stuff for stuff in models.Stuff.select()
+        if stuff.owner != user
+        and stuff not in [viewed.stuff for viewed in user.viewed]
+    ]
+
+
 if __name__ == '__main__':
     init_db()
