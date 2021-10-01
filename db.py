@@ -48,5 +48,16 @@ def select_unseen_stuff(user):
     ]
 
 
+def select_stuff_owner_liked_stuff(current_user, stuff_owner):
+    '''
+    Выбирает вещи текущего пользователя, которые понравились владельцу
+    лайкнутой вещи
+    '''
+    return [
+        like.stuff for like in stuff_owner.likes
+        if like.stuff.owner == current_user
+    ]
+
+
 if __name__ == '__main__':
     init_db()
