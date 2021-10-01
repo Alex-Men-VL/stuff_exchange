@@ -14,11 +14,16 @@ class User(BaseModel):
     name = TextField(default='')
 
 
+class Category(BaseModel):
+    name = TextField(unique=True)
+
+
 class Stuff(BaseModel):
     owner = ForeignKeyField(User, backref='stuff')
     image_id = TextField(default='')
     image_path = TextField(default='')
     description = TextField(default='')
+    category = ForeignKeyField(Category, backref='stuff')
 
 
 class LikedStuff(BaseModel):
@@ -33,4 +38,4 @@ class ViewedStuff(BaseModel):
 
 if __name__ == '__main__':
     DB.connect()
-    DB.create_tables([User, Stuff, LikedStuff, ViewedStuff])
+    DB.create_tables([User, Category, Stuff, LikedStuff, ViewedStuff])
