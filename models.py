@@ -19,13 +19,18 @@ class Stuff(BaseModel):
     image_id = TextField(default='')
     image_path = TextField(default='')
     description = TextField(default='')
-    likes = ManyToManyField(User, backref='likes')
-    viewed = ManyToManyField(User, backref='viewed')
 
 
-UserLikes = Stuff.likes.get_through_model()
-UserViewed = Stuff.viewed.get_through_model()
+class LikedStuff(BaseModel):
+    user = ForeignKeyField(User, backref='likes')
+    stuff = ForeignKeyField(Stuff, backref='likes')
+
+
+class ViewedStuff(BaseModel):
+    user = ForeignKeyField(User, backref='viewed')
+    stuff = ForeignKeyField(Stuff, backref='viewed')
+
 
 if __name__ == '__main__':
     DB.connect()
-    DB.create_tables([User, Stuff, UserLikes, UserViewed])
+    DB.create_tables([User, Stuff, LikedStuff, ViewedStuff])
