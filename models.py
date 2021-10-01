@@ -23,6 +23,9 @@ class Stuff(BaseModel):
     viewed = ManyToManyField(User, backref='viewed')
 
 
+UserLikes = Stuff.likes.get_through_model()
+UserViewed = Stuff.viewed.get_through_model()
+
 if __name__ == '__main__':
     DB.connect()
-    DB.create_tables([User, Stuff])
+    DB.create_tables([User, Stuff, UserLikes, UserViewed])
