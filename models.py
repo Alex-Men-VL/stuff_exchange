@@ -19,6 +19,8 @@ class Stuff(BaseModel):
     image_id = TextField(default='')
     image_path = TextField(default='')
     description = TextField(default='')
+    likes = ManyToManyField(User, backref='likes')
+    viewed = ManyToManyField(User, backref='viewed')
 
 
 if __name__ == '__main__':
