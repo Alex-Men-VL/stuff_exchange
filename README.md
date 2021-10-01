@@ -35,7 +35,3 @@ pip install -r requirements.txt
 ```sh
 python main.py
 ```
-
-## Цели проекта
-
-Код написан в учебных целях — для курса по Python на сайте [Devman](https://dvmn.org).
