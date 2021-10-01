@@ -19,8 +19,7 @@ async def cmd_start(message: types.Message):
         user = User.create(telegram_id=message.from_user.id, name=user_name)
 
     keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-    add_stuff_button = types.KeyboardButton(text='Добавить вещь')
-    keyboard.add(add_stuff_button)
+    keyboard.add('Добавить вещь')
 
     await message.answer(dedent('''\
         *Привет!* Я помогу тебе обменять что-то ненужное на очень нужное.\n
@@ -53,6 +52,5 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
 
 
 def register_handlers_common(dp: Dispatcher):
-    dp.register_message_handler(cmd_start, commands="start", state="*")
-    dp.register_message_handler(cmd_cancel, Text(equals='Главное меню'),
-                                state="*")
+    dp.register_message_handler(cmd_start, commands="start")
+    dp.register_message_handler(cmd_cancel, Text(equals='Главное меню'))

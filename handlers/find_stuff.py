@@ -17,7 +17,7 @@ def get_random_stuff(message):
 
     stuff_owner_id = stuff.owner.telegram_id
     stuff_photo = InputFile(f'data/{stuff_owner_id}/{stuff.image_path}')
-    return stuff_owner_id, stuff_photo, stuff
+    return stuff_photo, stuff
 
 
 async def send_match(bot, user_id, stuff):
@@ -37,15 +37,13 @@ async def send_match(bot, user_id, stuff):
 
 async def find_stuff(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup()
-    like_button = types.KeyboardButton(emoji.emojize(':thumbs_up:'))
-    dislike_button = types.KeyboardButton(emoji.emojize(':thumbs_down:'))
-    keyboard.add(like_button, dislike_button)
+    keyboard.add(emoji.emojize(':thumbs_up:'), emoji.emojize(':thumbs_down:'))
     keyboard.add('Главное меню')
 
     load_dotenv()
     bot = Bot(token=os.getenv('TG_TOKEN'))
 
-    stuff_owner_id, stuff_photo, stuff = get_random_stuff(message)
+    stuff_photo, stuff = get_random_stuff(message)
     await bot.send_photo(chat_id=message.from_user.id, photo=stuff_photo,
                          caption=stuff.description, reply_markup=keyboard)
 
@@ -56,7 +54,7 @@ async def find_stuff(message: types.Message):
         try:
             users_stuff = вещь пользователя (меня), которая понравилась тебе
             send_match(bot, message.from_user.id, stuff)
-            send_match(bot, stuff_owner_id, users_stuff)
+            send_match(bot, stuff.owner.telegram_id, users_stuff)
         '''
 
 

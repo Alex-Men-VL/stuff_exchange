@@ -67,9 +67,6 @@ async def get_stuff_description(message: types.Message, state: FSMContext):
         description=stuff['stuff_description'],
     )
 
-    # print(f"\nИзображение: {stuff['photo']}"
-    #       f"\nОписание: {stuff['stuff_description']}")
-
     await message.answer('Объявление добавлено. Вы находитесь в главном '
                          'меню.', reply_markup=keyboard)
     await state.finish()
