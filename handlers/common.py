@@ -18,9 +18,9 @@ async def cmd_start(message: types.Message):
     except User.DoesNotExist:
         user = User.create(telegram_id=message.from_user.id, name=user_name)
 
-    keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-    add_stuff_button = types.KeyboardButton(text='Добавить вещь')
-    keyboard.add(add_stuff_button)
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True,
+                                         one_time_keyboard=True)
+    keyboard.add('Добавить вещь')
 
     await message.answer(dedent('''\
         *Привет!* Я помогу тебе обменять что-то ненужное на очень нужное.\n
@@ -43,16 +43,19 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
     finally:
         await state.finish()
 
-        keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-        keyboard.add('Добавить вещь')
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True,
+                                             one_time_keyboard=True)
+
         if len(os.listdir(f'data/{message.from_user.id}')):
-            keyboard.add('Найти вещь')
+            keyboard.add('Добавить вещь', 'Найти вещь')
+        else:
+            keyboard.add('Добавить вещь')
 
         await message.answer("Вы перемещены на главный экран",
                              reply_markup=keyboard)
 
 
 def register_handlers_common(dp: Dispatcher):
-    dp.register_message_handler(cmd_start, commands="start", state="*")
+    dp.register_message_handler(cmd_start, commands="start")
     dp.register_message_handler(cmd_cancel, Text(equals='Главное меню'),
-                                state="*")
+                                state='*')

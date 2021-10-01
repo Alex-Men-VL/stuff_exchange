@@ -15,7 +15,7 @@ class AddStuff(StatesGroup):
 
 
 async def add_stuff(message: types.Message):
-    keyboard = types.ReplyKeyboardMarkup()
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add('Главное меню')
     await message.answer('Отправьте фото вещи, которую хотите обменять',
                          reply_markup=keyboard)
@@ -50,7 +50,7 @@ async def load_stuff_photo(message: types.Message, state: FSMContext):
 
 
 async def get_stuff_description(message: types.Message, state: FSMContext):
-    keyboard = types.ReplyKeyboardMarkup()
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add('Добавить вещь')
 
     if len(os.listdir(f'data/{message.from_user.id}')):
@@ -66,9 +66,6 @@ async def get_stuff_description(message: types.Message, state: FSMContext):
         image_path=stuff['photo_name'],
         description=stuff['stuff_description'],
     )
-
-    # print(f"\nИзображение: {stuff['photo']}"
-    #       f"\nОписание: {stuff['stuff_description']}")
 
     await message.answer('Объявление добавлено. Вы находитесь в главном '
                          'меню.', reply_markup=keyboard)
