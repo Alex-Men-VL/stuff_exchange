@@ -21,7 +21,7 @@ def get_random_stuff(message):
 
 
 async def send_match(bot, user_id, stuff):
-    keyboard = types.ReplyKeyboardMarkup()
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add('Главное меню')
     await bot.send_photo(chat_id=user_id, photo='media/match.png',
                          reply_markup=keyboard)

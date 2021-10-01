@@ -18,7 +18,8 @@ async def cmd_start(message: types.Message):
     except User.DoesNotExist:
         user = User.create(telegram_id=message.from_user.id, name=user_name)
 
-    keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True,
+                                         one_time_keyboard=True)
     keyboard.add('Добавить вещь')
 
     await message.answer(dedent('''\
@@ -42,10 +43,13 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
     finally:
         await state.finish()
 
-        keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-        keyboard.add('Добавить вещь')
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True,
+                                             one_time_keyboard=True)
+
         if len(os.listdir(f'data/{message.from_user.id}')):
-            keyboard.add('Найти вещь')
+            keyboard.add('Добавить вещь', 'Найти вещь')
+        else:
+            keyboard.add('Добавить вещь')
 
         await message.answer("Вы перемещены на главный экран",
                              reply_markup=keyboard)
