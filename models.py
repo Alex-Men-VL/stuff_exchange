@@ -15,7 +15,7 @@ class User(BaseModel):
 
 
 class Stuff(BaseModel):
-    user = ForeignKeyField(User, backref='stuff')
+    owner = ForeignKeyField(User, backref='stuff')
     image_id = TextField(default='')
     image_path = TextField(default='')
     description = TextField(default='')
