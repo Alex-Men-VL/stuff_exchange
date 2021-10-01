@@ -36,26 +36,33 @@ async def send_match(bot, user_id, stuff):
 
 
 async def find_stuff(message: types.Message):
-    keyboard = types.ReplyKeyboardMarkup()
-    keyboard.add(emoji.emojize(':thumbs_up:'), emoji.emojize(':thumbs_down:'))
-    keyboard.add('Главное меню')
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
     load_dotenv()
     bot = Bot(token=os.getenv('TG_TOKEN'))
 
-    stuff_photo, stuff = get_random_stuff(message)
-    await bot.send_photo(chat_id=message.from_user.id, photo=stuff_photo,
-                         caption=stuff.description, reply_markup=keyboard)
+    try:
+        stuff_photo, stuff = get_random_stuff(message)
+    except (IndexError, FileNotFoundError):
+        keyboard.add('Главное меню')
+        await message.answer('Новых объявлений нет.\nПопробуйте повторить '
+                             'попытку позже.', reply_markup=keyboard)
+    else:
+        keyboard.add(emoji.emojize(':thumbs_up:'),
+                     emoji.emojize(':thumbs_down:'))
+        keyboard.add('Главное меню')
+        await bot.send_photo(chat_id=message.from_user.id, photo=stuff_photo,
+                             caption=stuff.description, reply_markup=keyboard)
 
-    if message.text == emoji.emojize(':thumbs_up:'):
-        # добавляем like в бд к вещи
-        print('Like')
-        ''' Проверка взаимности лайка
-        try:
-            users_stuff = вещь пользователя (меня), которая понравилась тебе
-            send_match(bot, message.from_user.id, stuff)
-            send_match(bot, stuff.owner.telegram_id, users_stuff)
-        '''
+        if message.text == emoji.emojize(':thumbs_up:'):
+            # добавляем like в бд к вещи
+            print('Like')
+            ''' Проверка взаимности лайка
+            try:
+                users_stuff = вещь пользователя (меня), которая понравилась тебе
+                send_match(bot, message.from_user.id, stuff)
+                send_match(bot, stuff.owner.telegram_id, users_stuff)
+            '''
 
 
 def register_handlers_ads(dp: Dispatcher):
