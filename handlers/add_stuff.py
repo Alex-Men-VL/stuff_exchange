@@ -28,13 +28,7 @@ async def load_stuff_photo(message: types.Message, state: FSMContext):
         return
 
     photo_id = message.photo[-1].file_id
-    # TODO: добавление id объявления пользователю
-    try:
-        user = User.get(User.telegram_id == message.from_user.id)
-    except User.DoesNotExist:
-        user = User.create(telegram_id=message.from_user.id)
-    stuff = Stuff.create(user=user)
-
+    
     load_dotenv()
     bot = Bot(token=os.getenv('TG_TOKEN'))
 
@@ -50,9 +44,9 @@ async def load_stuff_photo(message: types.Message, state: FSMContext):
     await state.update_data(photo=photo_file)
     await state.update_data(photo_name=photo_name.split('/')[-1] +
                             photo_extension)
-    stuff.image_id = photo_id
-    stuff.image_path = photo_name.split('/')[-1] + photo_extension
-    stuff.save()
+    
+    user = User.get(User.telegram_id == message.from_user.id)
+    Stuff.create(user=user, image_id=photo_id)
 
     await AddStuff.waiting_for_description.set()
     await message.answer('Теперь введите описание.')
@@ -67,6 +61,11 @@ async def get_stuff_description(message: types.Message, state: FSMContext):
 
     await state.update_data(stuff_desription=message.text)
     stuff = await state.get_data()
+
+    db_stuff = Stuff.get(Stuff.image_id == stuff['photo']['file_id'])
+    db_stuff.image_path = stuff['photo_name']
+    db_stuff.description = stuff['stuff_desription']
+    db_stuff.save()
 
     print(f"\nИзображение: {stuff['photo']}"
           f"\nОписание: {stuff['stuff_desription']}")
