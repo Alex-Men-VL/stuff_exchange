@@ -53,4 +53,5 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
 
 def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start")
-    dp.register_message_handler(cmd_cancel, Text(equals='Главное меню'))
+    dp.register_message_handler(cmd_cancel, Text(equals='Главное меню'),
+                                state='*')
