@@ -30,7 +30,7 @@ class Stuff(BaseModel):
     image_id = TextField(default='')
     image_path = TextField(default='')
     description = TextField(default='')
-    category = ForeignKeyField(Category, backref='stuff')
+    category = ForeignKeyField(Category, backref='stuff', null=True)
     location = ForeignKeyField(Location, backref='stuff', null=True)
 
 
