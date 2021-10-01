@@ -6,12 +6,17 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 
+from models import User
+
 
 async def cmd_start(message: types.Message):
     user_id = message.from_user.id
     user_name = message.from_user.first_name
     Path(f'data/{user_id}').mkdir(exist_ok=True)
-    # TODO: добавление пользователя в JSON
+    try:
+        user = User.get(User.telegram_id == message.from_user.id)
+    except User.DoesNotExist:
+        user = User.create(telegram_id=message.from_user.id, name=user_name)
 
     keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
     add_stuff_button = types.KeyboardButton(text='Добавить вещь')

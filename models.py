@@ -11,6 +11,7 @@ class BaseModel(Model):
 class User(BaseModel):
     user_id = AutoField(column_name='id')
     telegram_id = IntegerField()
+    name = TextField(default='')
 
 
 class Stuff(BaseModel):
