@@ -18,12 +18,20 @@ class Category(BaseModel):
     name = TextField(unique=True)
 
 
+class Location(BaseModel):
+    longitude = FloatField()
+    latitude = FloatField()
+    title = TextField(default='')
+    address = TextField(default='')
+
+
 class Stuff(BaseModel):
     owner = ForeignKeyField(User, backref='stuff')
     image_id = TextField(default='')
     image_path = TextField(default='')
     description = TextField(default='')
     category = ForeignKeyField(Category, backref='stuff')
+    location = ForeignKeyField(Location, backref='stuff', null=True)
 
 
 class LikedStuff(BaseModel):
@@ -38,4 +46,11 @@ class ViewedStuff(BaseModel):
 
 if __name__ == '__main__':
     DB.connect()
-    DB.create_tables([User, Category, Stuff, LikedStuff, ViewedStuff])
+    DB.create_tables([
+        User,
+        Category,
+        Location,
+        Stuff,
+        LikedStuff,
+        ViewedStuff,
+    ])
