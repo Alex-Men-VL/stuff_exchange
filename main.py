@@ -10,6 +10,8 @@ from handlers.add_stuff import register_handlers_stuff
 from handlers.common import register_handlers_common
 from handlers.find_stuff import register_handlers_ads
 
+from models import DB, User, Stuff
+
 
 async def main():
     logging.basicConfig(
@@ -30,4 +32,6 @@ async def main():
     await dp.start_polling(dp)
 
 if __name__ == '__main__':
+    DB.connect()
+    DB.create_tables([User, Stuff])
     asyncio.run(main())
