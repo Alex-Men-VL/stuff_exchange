@@ -37,23 +37,24 @@ def init_db():
         models.Category.get_or_create(name=category)
 
 
-def select_unseen_stuff(user):
-    '''
+def select_unseen_stuff(user, category):
+    """
     Выбирает вещи, которые пользователь еще не смотрел.
     Вещи самого пользователя пропускаются.
-    '''
+    """
     return [
-        stuff for stuff in models.Stuff.select()
-        if stuff.owner != user
-        and stuff not in [viewed.stuff for viewed in user.viewed]
+        stuff for stuff in models.Stuff.select() if
+        (stuff.owner != user and
+         stuff not in [viewed.stuff for viewed in user.viewed] and
+         stuff.category.name == category.name)
     ]
 
 
 def select_stuff_owner_liked_stuff(current_user, stuff_owner):
-    '''
+    """
     Выбирает вещи текущего пользователя, которые понравились владельцу
     лайкнутой вещи
-    '''
+    """
     return [
         like.stuff for like in stuff_owner.likes
         if like.stuff.owner == current_user

@@ -11,7 +11,7 @@ from models import User
 
 async def cmd_start(message: types.Message):
     user_id = message.from_user.id
-    user_name = message.from_user.first_name
+    user_name = message.from_user.username
     Path(f'data/{user_id}').mkdir(exist_ok=True)
     try:
         user = User.get(User.telegram_id == message.from_user.id)
