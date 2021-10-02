@@ -6,17 +6,16 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher.filters import Text
 from aiogram.types import InputFile
 from dotenv import load_dotenv
-from models import Stuff, User
+from models import User, LikedStuff, ViewedStuff
+
+import db
 
 
-def get_random_stuff(message):
-    stuffs = Stuff.select()
-    stuff = choice([stuff for stuff in stuffs if (
-            stuff.owner.telegram_id != message.from_user.id
-    )])  # добавить проверку, что нет лайка и дизлайка
-
-    stuff_owner_id = stuff.owner.telegram_id
-    stuff_photo = InputFile(f'data/{stuff_owner_id}/{stuff.image_path}')
+def get_random_stuff(unseen_stuff):
+    stuff = choice(unseen_stuff)
+    stuff_photo = InputFile(
+        f'data/{stuff.owner.telegram_id}/{stuff.image_path}'
+    )
     return stuff_photo, stuff
 
 
@@ -40,9 +39,11 @@ async def find_stuff(message: types.Message):
 
     load_dotenv()
     bot = Bot(token=os.getenv('TG_TOKEN'))
+    current_user = User.get(User.telegram_id == message.from_user.id)
+    unseen_stuff = db.select_unseen_stuff(current_user)
 
     try:
-        stuff_photo, stuff = get_random_stuff(message)
+        stuff_photo, stuff = get_random_stuff(unseen_stuff)
     except (IndexError, FileNotFoundError):
         keyboard.add('Главное меню')
         await message.answer('Новых объявлений нет.\nПопробуйте повторить '
@@ -54,15 +55,18 @@ async def find_stuff(message: types.Message):
         await bot.send_photo(chat_id=message.from_user.id, photo=stuff_photo,
                              caption=stuff.description, reply_markup=keyboard)
 
+        ViewedStuff.create(user=current_user, stuff=stuff)
+
         if message.text == emoji.emojize(':thumbs_up:'):
-            # добавляем like в бд к вещи
             print('Like')
-            ''' Проверка взаимности лайка
-            try:
-                users_stuff = вещь пользователя (меня), которая понравилась тебе
-                send_match(bot, message.from_user.id, stuff)
-                send_match(bot, stuff.owner.telegram_id, users_stuff)
-            '''
+            LikedStuff.create(user=current_user, stuff=stuff)
+            stuff_liked_by_owner = db.select_stuff_owner_liked_stuff(
+                current_user, stuff.owner
+            )
+            if stuff_liked_by_owner:
+                print("Отправялем уведомление пользователям")
+                # send_match(bot, message.from_user.id, stuff)
+                # send_match(bot, stuff.owner.telegram_id, users_stuff)
 
 
 def register_handlers_ads(dp: Dispatcher):
