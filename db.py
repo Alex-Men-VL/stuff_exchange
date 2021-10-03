@@ -65,11 +65,11 @@ def select_unseen_categories(user):
     """
     Выбирает категории, в которых есть вещи, не просмотренные пользователем
     """
-    return set([
-        stuff.category.name for stuff in Stuff.select() if
-        (stuff.owner != user and
-         stuff not in [viewed.stuff for viewed in user.viewed])
-    ])
+    return list(set([
+        stuff.category for stuff in Stuff.select()
+        if stuff.owner != user
+        and stuff not in [viewed.stuff for viewed in user.viewed]
+    ]))
 
 
 if __name__ == '__main__':
