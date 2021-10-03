@@ -27,7 +27,8 @@ def get_random_stuff(unseen_stuff):
     return stuff_photo, stuff
 
 
-async def send_match(bot, user_id, stuff_bunch):
+async def send_match(bot, user, stuff_bunch):
+    user_id = user.telegram_id
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add('Главное меню')
     await bot.send_photo(chat_id=user_id, photo=InputFile('media/match.png'),
@@ -125,10 +126,8 @@ async def rate_stuff(message: types.Message, state: FSMContext):
             load_dotenv()
             bot = Bot(token=os.getenv('TG_TOKEN'))
 
-            await send_match(
-                bot, current_user.telegram_id, stuffs_liked_by_owner
-            )
-            await send_match(bot, stuff.owner.telegram_id, [stuff])
+            await send_match(bot, current_user, stuffs_liked_by_owner)
+            await send_match(bot, stuff.owner, [stuff])
 
     await FindStuff.waiting_for_continue.set()
 
