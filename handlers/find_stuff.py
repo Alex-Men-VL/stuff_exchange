@@ -39,7 +39,7 @@ async def send_match(bot, user_id, stuff):
                          caption=stuff.description)
 
     await bot.send_message(chat_id=user_id,
-                           text='Ссылка на пользователя:'
+                           text='Ссылка на пользователя: '
                                 f'@{stuff.owner.name}\n')
 
 
@@ -55,10 +55,8 @@ async def get_category(message: types.Message):
 async def show_stuff(message: types.Message, state: FSMContext):
     try:
         category = (await state.get_data())['category']
-        print('OK')
     except KeyError:
         category = message.text
-    print(category)
     if category not in [str(acceptable_number) for acceptable_number in
                         range(1, len(db.CATEGORIES) + 1)]:
         await message.answer('Неверный номер категории')
@@ -104,7 +102,6 @@ async def rate_stuff(message: types.Message, state: FSMContext):
     await message.answer('Спасибо за оценку!', reply_markup=keyboard)
 
     if message.text == emoji.emojize(':thumbs_up:'):
-        print('Like')
         liked_stuff = await state.get_data()
         stuff = Stuff[liked_stuff['stuff_id']]
         current_user = User[liked_stuff['current_user_id']]
