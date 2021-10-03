@@ -99,15 +99,12 @@ async def show_stuff(message: types.Message, state: FSMContext):
         category = (await state.get_data())['category']
     except KeyError:
         category = message.text
-    print(category)
+
     if category not in db.CATEGORIES:
         await message.answer('Неверная категория')
         return
 
     await state.update_data(category=category)
-
-    load_dotenv()
-    bot = Bot(token=os.getenv('TG_TOKEN'))
 
     current_user = User.get(User.telegram_id == message.from_user.id)
     unseen_stuff = db.select_unseen_stuff(current_user, category)
@@ -130,6 +127,10 @@ async def show_stuff(message: types.Message, state: FSMContext):
     photo_caption = f'Категория: {category}\n' \
                     f'Описание: {stuff.description}\n' \
                     f'Место нахождения: {stuff.location}'
+
+    load_dotenv()
+    bot = Bot(token=os.getenv('TG_TOKEN'))
+
     await bot.send_photo(chat_id=message.from_user.id, photo=stuff_photo,
                          caption=photo_caption, reply_markup=keyboard)
 
@@ -141,7 +142,7 @@ async def show_stuff(message: types.Message, state: FSMContext):
 
 async def rate_stuff(message: types.Message, state: FSMContext):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add('Продолжить', 'Сменить категорию')
+    keyboard.add('Продолжить в этой категории', 'Сменить категорию')
     keyboard.add('Главное меню')
 
     await message.answer('Спасибо за оценку!', reply_markup=keyboard)
@@ -158,8 +159,6 @@ async def rate_stuff(message: types.Message, state: FSMContext):
             stuff.owner
         )
         if stuffs_liked_by_owner:
-            print("Отправляем уведомление пользователям")
-
             load_dotenv()
             bot = Bot(token=os.getenv('TG_TOKEN'))
 
@@ -180,7 +179,7 @@ def register_handlers_ads(dp: Dispatcher):
     dp.register_message_handler(show_stuff,
                                 state=FindStuff.waiting_for_category)
     dp.register_message_handler(show_stuff,
-                                Text(equals='Продолжить'),
+                                Text(equals='Продолжить в этой категории'),
                                 state=FindStuff.waiting_for_continue)
 
     dp.register_message_handler(rate_stuff,
