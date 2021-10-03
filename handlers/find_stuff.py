@@ -96,7 +96,7 @@ async def show_stuff(message: types.Message, state: FSMContext):
 
 
 async def rate_stuff(message: types.Message, state: FSMContext):
-    keyboard = types.ReplyKeyboardMarkup()
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add('Продолжить', 'Главное меню')
 
     await message.answer('Спасибо за оценку!', reply_markup=keyboard)
