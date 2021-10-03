@@ -59,11 +59,17 @@ def get_categories_keyboard(available_categories):
     if not available_categories:
         return
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    keyboard.add('Главное меню')
     for category in available_categories:
-        keyboard.insert(
-            f'{category.name.capitalize()} ({len(category.stuff)})'
+        viewed_category_stuffs = (
+            ViewedStuff.select().join(Stuff).where(Stuff.category == category)
         )
+        available_stuff_count = (
+            len(category.stuff) - len(viewed_category_stuffs)
+        )
+        keyboard.insert(
+            f'{category.name.capitalize()} ({available_stuff_count})'
+        )
+    keyboard.add('Главное меню')
     return keyboard
 
 
