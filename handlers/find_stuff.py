@@ -56,29 +56,21 @@ async def send_match(bot, user, stuff_bunch):
 
 
 def get_categories_keyboard(available_categories):
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-
-    if len(available_categories) == 1:
-        keyboard.add(available_categories[0])
-    elif len(available_categories) == 0:
-        return False
-    elif len(available_categories) % 2 == 0:
-        for category_number in range(0, len(available_categories) - 1, 2):
-            keyboard.add(available_categories[category_number],
-                         available_categories[category_number + 1])
-    else:
-        for category_number in range(0, len(available_categories) - 2, 2):
-            keyboard.add(available_categories[category_number],
-                         available_categories[category_number + 1])
-        keyboard.add(available_categories[-1])
+    if not available_categories:
+        return
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     keyboard.add('Главное меню')
+    for category in available_categories:
+        keyboard.insert(
+            f'{category.name.capitalize()} ({len(category.stuff)})'
+        )
     return keyboard
 
 
 async def get_category(message: types.Message, state: FSMContext):
     user = User.get(User.telegram_id == message.from_user.id)
 
-    available_categories = list(db.select_unseen_categories(user))
+    available_categories = db.select_unseen_categories(user)
 
     keyboard = get_categories_keyboard(available_categories)
     if not keyboard:
@@ -98,7 +90,7 @@ async def show_stuff(message: types.Message, state: FSMContext):
     try:
         category = (await state.get_data())['category']
     except KeyError:
-        category = message.text
+        category = message.text.lower().split(' (')[0]
 
     if category not in db.CATEGORIES:
         await message.answer('Неверная категория')
