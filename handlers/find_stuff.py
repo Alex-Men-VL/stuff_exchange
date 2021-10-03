@@ -126,8 +126,8 @@ async def rate_stuff(message: types.Message, state: FSMContext):
             load_dotenv()
             bot = Bot(token=os.getenv('TG_TOKEN'))
 
-            await send_match(bot, current_user, stuffs_liked_by_owner)
-            await send_match(bot, stuff.owner, [stuff])
+            await send_match(bot, current_user, [stuff])
+            await send_match(bot, stuff.owner, stuffs_liked_by_owner)
 
     await FindStuff.waiting_for_continue.set()
 
