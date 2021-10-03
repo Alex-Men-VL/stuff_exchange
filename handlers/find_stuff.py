@@ -27,20 +27,27 @@ def get_random_stuff(unseen_stuff):
     return stuff_photo, stuff
 
 
-async def send_match(bot, user_id, stuff):
-    # TODO: Допилить для случая, когда не одна вещь
+async def send_match(bot, user_id, stuff_bunch):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add('Главное меню')
     await bot.send_photo(chat_id=user_id, photo=InputFile('media/match.png'),
                          reply_markup=keyboard)
-    stuff_owner_id = stuff.owner.telegram_id
-    stuff_photo = InputFile(f'data/{stuff_owner_id}/{stuff.image_path}')
-    await bot.send_photo(chat_id=user_id, photo=stuff_photo,
-                         caption=stuff.description)
+    for stuff in stuff_bunch:
+        stuff_owner_id = stuff.owner.telegram_id
+        stuff_photo = InputFile(f'data/{stuff_owner_id}/{stuff.image_path}')
+        stuff_location = stuff.location if stuff.location else 'не указано'
+        stuff_details = (
+            f'Описание: {stuff.description}\n'
+            f'Категория: {stuff.category.name}\n'
+            f'Место нахождения: {stuff_location}\n'
+        )
+        await bot.send_photo(chat_id=user_id, photo=stuff_photo,
+                             caption=stuff_details)
 
-    await bot.send_message(chat_id=user_id,
-                           text='Ссылка на пользователя: '
-                                f'@{stuff.owner.name}\n')
+    await bot.send_message(
+        chat_id=user_id,
+        text=f'Ссылка на владельца: @{stuff.owner.name}\n'
+    )
 
 
 async def get_category(message: types.Message):
