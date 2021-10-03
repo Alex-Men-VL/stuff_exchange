@@ -27,20 +27,32 @@ def get_random_stuff(unseen_stuff):
     return stuff_photo, stuff
 
 
-async def send_match(bot, user_id, stuff):
-    # TODO: Допилить для случая, когда не одна вещь
+async def send_match(bot, user, stuff_bunch):
+    user_id = user.telegram_id
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add('Главное меню')
     await bot.send_photo(chat_id=user_id, photo=InputFile('media/match.png'),
                          reply_markup=keyboard)
-    stuff_owner_id = stuff.owner.telegram_id
-    stuff_photo = InputFile(f'data/{stuff_owner_id}/{stuff.image_path}')
-    await bot.send_photo(chat_id=user_id, photo=stuff_photo,
-                         caption=stuff.description)
+    for stuff in stuff_bunch:
+        stuff_owner_id = stuff.owner.telegram_id
+        stuff_photo = InputFile(f'data/{stuff_owner_id}/{stuff.image_path}')
+        stuff_location = stuff.location if stuff.location else 'не указано'
+        stuff_details = (
+            f'Описание: {stuff.description}\n'
+            f'Категория: {stuff.category.name}\n'
+            f'Место нахождения: {stuff_location}\n'
+        )
+        await bot.send_photo(chat_id=user_id, photo=stuff_photo,
+                             caption=stuff_details)
 
-    await bot.send_message(chat_id=user_id,
-                           text='Ссылка на пользователя: '
-                                f'@{stuff.owner.name}\n')
+    await bot.send_message(
+        chat_id=user_id,
+        text=(
+            f'Пользователь @{stuff.owner.name} лайкнул вашу вещь!\n'
+            f'Вы можете обменяться. '
+            f'Выше список вещей, которые вам понравились.'
+        )
+    )
 
 
 async def get_category(message: types.Message):
@@ -115,13 +127,11 @@ async def rate_stuff(message: types.Message, state: FSMContext):
         if stuffs_liked_by_owner:
             print("Отправляем уведомление пользователям")
 
-            # TODO: может вернуться более одной вещи!
             load_dotenv()
             bot = Bot(token=os.getenv('TG_TOKEN'))
 
-            await send_match(bot, current_user.telegram_id, stuff)
-            await send_match(bot, stuff.owner.telegram_id,
-                             stuffs_liked_by_owner[0])
+            await send_match(bot, current_user, [stuff])
+            await send_match(bot, stuff.owner, stuffs_liked_by_owner)
 
     await FindStuff.waiting_for_continue.set()
 
