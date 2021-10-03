@@ -122,13 +122,13 @@ async def rate_stuff(message: types.Message, state: FSMContext):
         if stuffs_liked_by_owner:
             print("Отправляем уведомление пользователям")
 
-            # TODO: может вернуться более одной вещи!
             load_dotenv()
             bot = Bot(token=os.getenv('TG_TOKEN'))
 
-            await send_match(bot, current_user.telegram_id, stuff)
-            await send_match(bot, stuff.owner.telegram_id,
-                             stuffs_liked_by_owner[0])
+            await send_match(
+                bot, current_user.telegram_id, stuffs_liked_by_owner
+            )
+            await send_match(bot, stuff.owner.telegram_id, [stuff])
 
     await FindStuff.waiting_for_continue.set()
 
