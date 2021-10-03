@@ -18,24 +18,23 @@ class AddStuff(StatesGroup):
 
 
 async def add_stuff(message: types.Message):
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True,
+                                         one_time_keyboard=True)
+
+    for category_number in range(0, len(db.CATEGORIES) - 1, 2):
+        keyboard.add(db.CATEGORIES[category_number],
+                     db.CATEGORIES[category_number + 1])
     keyboard.add('Главное меню')
-    await message.answer('Выберите категорию:\n')
-
-    text = ''
-    for number, category in enumerate(db.CATEGORIES, start=1):
-        text += f'{number}. {category}\n'
-
-    await message.answer(text, reply_markup=keyboard)
+    await message.answer('Выберите категорию', reply_markup=keyboard)
     await AddStuff.waiting_for_category.set()
 
 
 async def get_stuff_category(message: types.Message, state: FSMContext):
-    if message.text not in [str(acceptable_number) for acceptable_number in
-                            range(1, len(db.CATEGORIES) + 1)]:
-        await message.answer('Неверный номер категории')
+    category = message.text
+    if category not in db.CATEGORIES:
+        await message.answer('Неверная категория')
         return
-    await state.update_data(category=message.text)
+    await state.update_data(category=category)
 
     await message.answer('Отправьте фото вещи')
     await AddStuff.waiting_for_photo.set()
@@ -46,11 +45,10 @@ async def load_stuff_photo(message: types.Message, state: FSMContext):
         await message.answer('Отправьте фото вашей вещи.')
         return
 
-    photo_id = message.photo[-1].file_id
-    
     load_dotenv()
     bot = Bot(token=os.getenv('TG_TOKEN'))
 
+    photo_id = message.photo[-1].file_id
     photo_file = await bot.get_file(photo_id)
     photo_path, photo_extension = os.path.splitext(photo_file.file_path)
 
@@ -65,7 +63,7 @@ async def load_stuff_photo(message: types.Message, state: FSMContext):
     await state.update_data(photo_name=photo_name)
     
     await AddStuff.waiting_for_description.set()
-    await message.answer('Теперь введите описание.')
+    await message.answer('Введите описание.')
 
 
 async def get_stuff_description(message: types.Message, state: FSMContext):
@@ -84,15 +82,16 @@ async def get_location(message: types.Message, state: FSMContext):
     await state.update_data(location=message.text)
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add('Добавить вещь')
 
     if len(os.listdir(f'data/{message.from_user.id}')):
-        keyboard.add('Найти вещь')
+        keyboard.add('Добавить вещь', 'Найти вещь')
+    else:
+        keyboard.add('Добавить вещь')
 
     stuff = await state.get_data()
 
     # category = Category.get(Category.name == stuff['category'])
-    category = Category[int(stuff['category'])]
+    category = Category.get(Category.name == stuff['category'])
     user = User.get(User.telegram_id == message.from_user.id)
     Stuff.create(
         owner=user,

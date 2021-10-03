@@ -1,6 +1,6 @@
 from peewee import SqliteDatabase
 
-import models
+from models import *
 
 
 CATEGORIES = [
@@ -23,18 +23,18 @@ CATEGORIES = [
 
 
 def init_db():
-    db = models.DB
+    db = DB
     db.connect()
     db.create_tables([
-        models.User,
-        models.Category,
-        models.Location,
-        models.Stuff,
-        models.LikedStuff,
-        models.ViewedStuff,
+        User,
+        Category,
+        Location,
+        Stuff,
+        LikedStuff,
+        ViewedStuff,
     ])
     for category in CATEGORIES:
-        models.Category.get_or_create(name=category)
+        Category.get_or_create(name=category)
 
 
 def select_unseen_stuff(user, category):
@@ -43,10 +43,10 @@ def select_unseen_stuff(user, category):
     Вещи самого пользователя пропускаются.
     """
     return [
-        stuff for stuff in models.Stuff.select() if
+        stuff for stuff in Stuff.select() if
         (stuff.owner != user and
          stuff not in [viewed.stuff for viewed in user.viewed] and
-         stuff.category.id == int(category))
+         stuff.category.name == category)
     ]
 
 
@@ -59,6 +59,17 @@ def select_stuff_owner_liked_stuff(current_user, stuff_owner):
         like.stuff for like in stuff_owner.likes
         if like.stuff.owner == current_user
     ]
+
+
+def select_unseen_categories(user):
+    """
+    Выбирает категории, в которых есть вещи, не просмотренные пользователем
+    """
+    return set([
+        stuff.category.name for stuff in Stuff.select() if
+        (stuff.owner != user and
+         stuff not in [viewed.stuff for viewed in user.viewed])
+    ])
 
 
 if __name__ == '__main__':

@@ -18,10 +18,6 @@ class Category(BaseModel):
 
 
 class Location(BaseModel):
-    # longitude = FloatField()
-    # latitude = FloatField()
-    # title = TextField(default='')
-    # address = TextField(default='')
     address = TextField()
 
 
