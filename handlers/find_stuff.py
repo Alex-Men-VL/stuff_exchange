@@ -47,7 +47,11 @@ async def send_match(bot, user, stuff_bunch):
 
     await bot.send_message(
         chat_id=user_id,
-        text=f'Ссылка на владельца: @{stuff.owner.name}\n'
+        text=(
+            f'Пользователь @{stuff.owner.name} лайкнул вашу вещь!\n'
+            f'Вы можете обменяться. '
+            f'Выше список вещей, которые вам понравились.'
+        )
     )
 
 
