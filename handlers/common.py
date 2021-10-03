@@ -2,9 +2,11 @@ import os
 from pathlib import Path
 from textwrap import dedent
 
-from aiogram import Dispatcher, types
+from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
+from aiogram.types import InputFile
+from dotenv import load_dotenv
 
 from models import User
 
@@ -23,13 +25,20 @@ async def cmd_start(message: types.Message):
     keyboard.add('Добавить вещь')
 
     await message.answer(dedent('''\
-        *Привет!* Я помогу тебе обменять что-то ненужное на очень нужное.\n
+        *Привет!* Я помогу тебе обменять что-то ненужное на очень нужное.
+        
         Чтобы разместить вещь к обмену нажми на *Добавить вещь*.
-        После этого тебе станут доступны вещи других пользователей.\n
-        Нажми на *Найти вещь* и я пришлю тебе фотографии вещей для обмена.\n
-        Понравилась вещь - жми *Обменяться*, нет - снова нажимай *Найти вещь*.\n
-        Нажал *обменяться*? - если владельцу вещи понравится что-то из твоих
+        После этого тебе станут доступны вещи других пользователей.
+        
+        Нажми на *Найти вещь* и я пришлю тебе фотографии вещей определенной 
+        категории для обмена.
+        
+        Понравилась вещь - жми *Лайк*, нет - жми *Дизлайк*.
+        Нажал *Лайк*? - если владельцу вещи понравится что-то из твоих 
         вещей, то я пришлю контакты вам обоим.
+        
+        Нажал не на ту кнопку? - жми на кнопку *Главное меню*
+        Возникли трудности? - напиши *помощь*
         '''), reply_markup=keyboard, parse_mode='Markdown')
 
 
@@ -55,7 +64,21 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
                              reply_markup=keyboard)
 
 
+async def cmd_help(message: types.Message):
+    help_text = 'Пожалуйста, воспользуйтесь кнопками в нижнем меню. Если они ' \
+                'у вас не отображаются, просто нажмите на эту кнопку в поле ' \
+                'ввода.\n\nЕсли вы совершили ошибочное действие и хотите его ' \
+                'отменить, нажмите на кнопку Главное меню'
+    load_dotenv()
+    bot = Bot(token=os.getenv('TG_TOKEN'))
+    await bot.send_photo(chat_id=message.from_user.id,
+                         photo=InputFile('media/help.png'),
+                         caption=help_text)
+
+
 def register_handlers_common(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start")
     dp.register_message_handler(cmd_cancel, Text(equals='Главное меню'),
                                 state='*')
+    dp.register_message_handler(cmd_help, Text(equals='помощь'))
+    dp.register_message_handler(cmd_help, Text(equals='Помощь'))
