@@ -10,7 +10,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 import db
-from models import LikedStuff, User, ViewedStuff, Stuff
+from models import LikedStuff, User, ViewedStuff, Stuff, Category
 
 
 class FindStuff(StatesGroup):
@@ -55,12 +55,42 @@ async def send_match(bot, user, stuff_bunch):
     )
 
 
-async def get_category(message: types.Message):
-    await message.answer('Выберите категорию:\n')
-    text = ''
-    for number, category in enumerate(db.CATEGORIES, start=1):
-        text += f'{number}. {category}\n'
-    await message.answer(text)
+def get_categories_keyboard(available_categories):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    if len(available_categories) == 1:
+        keyboard.add(available_categories[0])
+    elif len(available_categories) == 0:
+        return False
+    elif len(available_categories) % 2 == 0:
+        for category_number in range(0, len(available_categories) - 1, 2):
+            keyboard.add(available_categories[category_number],
+                         available_categories[category_number + 1])
+    else:
+        for category_number in range(0, len(available_categories) - 2, 2):
+            keyboard.add(available_categories[category_number],
+                         available_categories[category_number + 1])
+        keyboard.add(available_categories[-1])
+    keyboard.add('Главное меню')
+    return keyboard
+
+
+async def get_category(message: types.Message, state: FSMContext):
+    user = User.get(User.telegram_id == message.from_user.id)
+
+    available_categories = list(db.select_unseen_categories(user))
+
+    keyboard = get_categories_keyboard(available_categories)
+    if not keyboard:
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard.add('Главное меню')
+        await message.answer('Все объявления просмотренны. Повторите попытку '
+                             'позже.', reply_markup=keyboard)
+        return
+
+    await message.answer('Выберите категорию.',
+                         reply_markup=keyboard)
+    await state.finish()
     await FindStuff.waiting_for_category.set()
 
 
@@ -69,9 +99,9 @@ async def show_stuff(message: types.Message, state: FSMContext):
         category = (await state.get_data())['category']
     except KeyError:
         category = message.text
-    if category not in [str(acceptable_number) for acceptable_number in
-                        range(1, len(db.CATEGORIES) + 1)]:
-        await message.answer('Неверный номер категории')
+    print(category)
+    if category not in db.CATEGORIES:
+        await message.answer('Неверная категория')
         return
 
     await state.update_data(category=category)
@@ -88,15 +118,17 @@ async def show_stuff(message: types.Message, state: FSMContext):
     try:
         stuff_photo, stuff = get_random_stuff(unseen_stuff)
     except (IndexError, FileNotFoundError):
-        keyboard.add('Главное меню')
-        await message.answer('Новых объявлений нет.\nПопробуйте повторить '
-                             'попытку позже.', reply_markup=keyboard)
+        await state.finish()
+        keyboard.add('Главное меню', 'Сменить категорию')
+        await message.answer('Новых объявлений нет.\nПопробуйте изменить '
+                             'категорию.',
+                             reply_markup=keyboard)
         return
 
     keyboard.add(emoji.emojize(':thumbs_up:'), emoji.emojize(':thumbs_down:'))
     keyboard.add('Главное меню')
     photo_caption = f'Категория: {category}\n' \
-                    f'Описание: {stuff.description}\n'\
+                    f'Описание: {stuff.description}\n' \
                     f'Место нахождения: {stuff.location}'
     await bot.send_photo(chat_id=message.from_user.id, photo=stuff_photo,
                          caption=photo_caption, reply_markup=keyboard)
@@ -109,7 +141,8 @@ async def show_stuff(message: types.Message, state: FSMContext):
 
 async def rate_stuff(message: types.Message, state: FSMContext):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add('Продолжить', 'Главное меню')
+    keyboard.add('Продолжить', 'Сменить категорию')
+    keyboard.add('Главное меню')
 
     await message.answer('Спасибо за оценку!', reply_markup=keyboard)
 
@@ -140,12 +173,16 @@ def register_handlers_ads(dp: Dispatcher):
     dp.register_message_handler(get_category,
                                 Text(equals='Найти вещь'),
                                 state='*')
+    dp.register_message_handler(get_category,
+                                Text(equals='Сменить категорию'),
+                                state='*')
+
+    dp.register_message_handler(show_stuff,
+                                state=FindStuff.waiting_for_category)
     dp.register_message_handler(show_stuff,
                                 Text(equals='Продолжить'),
                                 state=FindStuff.waiting_for_continue)
-    dp.register_message_handler(show_stuff,
-                                state=FindStuff.waiting_for_category,
-                                content_types=types.ContentTypes.TEXT)
+
     dp.register_message_handler(rate_stuff,
                                 Text(equals=emoji.emojize(':thumbs_down:')),
                                 state=FindStuff.waiting_for_rate)
