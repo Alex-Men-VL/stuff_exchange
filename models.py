@@ -22,7 +22,7 @@ class Location(BaseModel):
     # latitude = FloatField()
     # title = TextField(default='')
     # address = TextField(default='')
-    address = TextField(unique=True)
+    address = TextField()
 
 
 class Stuff(BaseModel):
@@ -31,7 +31,7 @@ class Stuff(BaseModel):
     image_path = TextField(default='')
     description = TextField(default='')
     category = ForeignKeyField(Category, backref='stuff', null=True)
-    location = ForeignKeyField(Location, backref='stuff', null=True)
+    location = TextField(default='')
 
 
 class LikedStuff(BaseModel):

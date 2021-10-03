@@ -32,7 +32,7 @@ async def add_stuff(message: types.Message):
 
 async def get_stuff_category(message: types.Message, state: FSMContext):
     if message.text not in [str(acceptable_number) for acceptable_number in
-                        range(1, len(db.CATEGORIES) + 1)]:
+                            range(1, len(db.CATEGORIES) + 1)]:
         await message.answer('Неверный номер категории')
         return
     await state.update_data(category=message.text)
@@ -80,7 +80,8 @@ async def get_stuff_description(message: types.Message, state: FSMContext):
 
 
 async def get_location(message: types.Message, state: FSMContext):
-    location = Location.create(address=message.text)
+    # location = Location.create(address=message.text)
+    await state.update_data(location=message.text)
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add('Добавить вещь')
@@ -90,11 +91,8 @@ async def get_location(message: types.Message, state: FSMContext):
 
     stuff = await state.get_data()
 
-    try:
-        category = Category.get(name=stuff['category'])
-    except Category.DoesNotExist:
-        category = Category.create(name=stuff['category'])
-
+    # category = Category.get(Category.name == stuff['category'])
+    category = Category[int(stuff['category'])]
     user = User.get(User.telegram_id == message.from_user.id)
     Stuff.create(
         owner=user,
@@ -102,7 +100,7 @@ async def get_location(message: types.Message, state: FSMContext):
         image_path=stuff['photo_name'],
         description=stuff['stuff_description'],
         category=category,
-        location=location
+        location=stuff['location']
     )
 
     await message.answer('Объявление добавлено. Вы находитесь в главном '

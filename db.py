@@ -46,7 +46,7 @@ def select_unseen_stuff(user, category):
         stuff for stuff in models.Stuff.select() if
         (stuff.owner != user and
          stuff not in [viewed.stuff for viewed in user.viewed] and
-         stuff.category.name == category.name)
+         stuff.category.id == int(category))
     ]
 
 
